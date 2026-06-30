@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MY POS — Run your till from anywhere</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --ink: #14141f;
+            --paper: #f4f2ec;
+            --till-green: #1f7a4d;
+            --receipt: #fff;
+            --line: #d8d4c7;
+            --accent: #f0c419;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            background: var(--ink);
+            color: var(--paper);
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+        }
+
+        .mono { font-family: 'IBM Plex Mono', monospace; }
+
+        h1, h2, .display {
+            font-family: 'Space Grotesk', sans-serif;
+            letter-spacing: -0.02em;
+        }
+
+        /* ── Nav ── */
+        .topnav {
+            background: transparent;
+            padding: 1.4rem 2rem;
+        }
+        .topnav .brand {
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: var(--paper);
+        }
+        .topnav .brand span { color: var(--accent); }
+        .topnav a.btn-outline-custom {
+            border: 1px solid rgba(244,242,236,0.35);
+            color: var(--paper);
+            padding: 0.45rem 1.1rem;
+            border-radius: 999px;
+            font-size: 0.9rem;
+            transition: all .2s ease;
+        }
+        .topnav a.btn-outline-custom:hover {
+            border-color: var(--paper);
+            background: rgba(244,242,236,0.08);
+        }
+        .topnav a.btn-fill {
+            background: var(--accent);
+            color: #14141f;
+            padding: 0.45rem 1.2rem;
+            border-radius: 999px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        .topnav a.btn-fill:hover { background: #f7d34d; color: #14141f; }
+
+        /* ── Hero ── */
+        .hero {
+            padding: 5rem 2rem 4rem;
+            position: relative;
+        }
+        .hero .eyebrow {
+            color: var(--accent);
+            font-size: 0.8rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+        }
+        .hero h1 {
+            font-size: clamp(2.6rem, 6vw, 4.4rem);
+            font-weight: 700;
+            line-height: 1.02;
+            margin: 0.6rem 0 1.2rem;
+        }
+        .hero p.lede {
+            color: rgba(244,242,236,0.7);
+            font-size: 1.15rem;
+            max-width: 480px;
+            line-height: 1.6;
+        }
+        .cta-row { margin-top: 2rem; display: flex; gap: 0.9rem; flex-wrap: wrap; }
+        .btn-primary-cta {
+            background: var(--accent);
+            border: none;
+            color: #14141f;
+            padding: 0.85rem 1.7rem;
+            border-radius: 8px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn-primary-cta:hover { background: #f7d34d; color: #14141f; }
+        .btn-ghost-cta {
+            border: 1px solid rgba(244,242,236,0.3);
+            color: var(--paper);
+            padding: 0.85rem 1.7rem;
+            border-radius: 8px;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn-ghost-cta:hover { border-color: var(--paper); color: var(--paper); background: rgba(244,242,236,0.06); }
+
+        /* ── Receipt signature element ── */
+        .receipt {
+            background: var(--receipt);
+            color: var(--ink);
+            width: 290px;
+            margin-left: auto;
+            border-radius: 2px;
+            box-shadow: 0 30px 60px -20px rgba(0,0,0,0.6);
+            transform: rotate(2.5deg);
+            position: relative;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.78rem;
+        }
+        .receipt::before, .receipt::after {
+            content: "";
+            position: absolute;
+            left: 0; right: 0;
+            height: 10px;
+            background:
+                linear-gradient(135deg, var(--ink) 25%, transparent 25%) 0 0,
+                linear-gradient(225deg, var(--ink) 25%, transparent 25%) 0 0;
+            background-size: 14px 14px;
+            background-color: transparent;
+        }
+        .receipt::before { top: -9px; transform: rotate(180deg); }
+        .receipt::after { bottom: -9px; }
+        .receipt .r-body { padding: 1.6rem 1.4rem 1.8rem; }
+        .receipt .r-title { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 1rem; margin-bottom: 0.1rem; }
+        .receipt .r-sub { color: #888; font-size: 0.68rem; margin-bottom: 1rem; }
+        .receipt .r-row { display: flex; justify-content: space-between; border-bottom: 1px dashed var(--line); padding: 0.3rem 0; }
+        .receipt .r-total { display: flex; justify-content: space-between; font-weight: 600; margin-top: 0.6rem; font-size: 0.85rem; }
+        .receipt .r-paid {
+            margin-top: 1rem; text-align: center; color: var(--till-green);
+            border: 1.5px solid var(--till-green); border-radius: 4px; padding: 0.3rem 0;
+            font-size: 0.72rem; letter-spacing: 0.08em; transform: rotate(-2deg);
+        }
+
+        /* ── Features ── */
+        .features { padding: 1rem 2rem 5rem; }
+        .feature-card {
+            background: rgba(244,242,236,0.04);
+            border: 1px solid rgba(244,242,236,0.1);
+            border-radius: 10px;
+            padding: 1.6rem;
+            height: 100%;
+        }
+        .feature-card .tag {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.72rem;
+            color: var(--accent);
+            margin-bottom: 0.7rem;
+            display: block;
+        }
+        .feature-card h3 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.15rem;
+            margin-bottom: 0.5rem;
+        }
+        .feature-card p {
+            color: rgba(244,242,236,0.65);
+            font-size: 0.92rem;
+            margin: 0;
+            line-height: 1.55;
+        }
+
+        footer {
+            border-top: 1px solid rgba(244,242,236,0.1);
+            padding: 1.6rem 2rem;
+            color: rgba(244,242,236,0.45);
+            font-size: 0.82rem;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .receipt { margin: 2.5rem auto 0; transform: rotate(1deg); }
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav class="topnav d-flex justify-content-between align-items-center">
+        <span class="brand">MY <span>POS</span></span>
+        <div class="d-flex align-items-center gap-2">
+            <a href="login.html" class="btn-outline-custom">Log in</a>
+            <a href="register.html" class="btn-fill">Get started</a>
+        </div>
+    </nav>
+
+    <section class="hero">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <span class="eyebrow mono">// point of sale, simplified</span>
+                <h1>Every sale,<br>tracked to the<br>last shilling.</h1>
+                <p class="lede">Add products, take M-Pesa payments at the till, and watch stock and
+                    revenue update in real time — no spreadsheets, no end-of-day guesswork.</p>
+                <div class="cta-row">
+                    <a href="register.html" class="btn-primary-cta">Create your account</a>
+                    <a href="login.html" class="btn-ghost-cta">I already have one</a>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="receipt">
+                    <div class="r-body">
+                        <div class="r-title">MY POS</div>
+                        <div class="r-sub">RECEIPT NO. 0214</div>
+                        <div class="r-row"><span>Blue Soda 500ml</span><span>120</span></div>
+                        <div class="r-row"><span>Wheat Bread</span><span>65</span></div>
+                        <div class="r-row"><span>Cooking Oil 1L</span><span>340</span></div>
+                        <div class="r-total"><span>TOTAL (KES)</span><span>525</span></div>
+                        <div class="r-paid">✓ M-PESA CONFIRMED</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="features">
+        <div class="row g-3">
+            <div class="col-md-3 col-6">
+                <div class="feature-card">
+                    <span class="tag">01 · CATALOG</span>
+                    <h3>Products</h3>
+                    <p>Add and price every item in seconds, then edit or retire them as your shelf changes.</p>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="feature-card">
+                    <span class="tag">02 · INVENTORY</span>
+                    <h3>Stock</h3>
+                    <p>See what's running low before customers do, with clear in-stock, low, and out-of-stock states.</p>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="feature-card">
+                    <span class="tag">03 · CHECKOUT</span>
+                    <h3>Sales &amp; M-Pesa</h3>
+                    <p>Send an STK push straight to the customer's phone and confirm payment without leaving the till.</p>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="feature-card">
+                    <span class="tag">04 · OVERVIEW</span>
+                    <h3>Dashboard</h3>
+                    <p>Revenue, sales volume, and stock health in one view, updated as the day happens.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <span>MY POS — built for the counter, not the boardroom.</span>
+        <span class="mono">v1.0</span>
+    </footer>
+
+</body>
+
+</html>

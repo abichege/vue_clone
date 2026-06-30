@@ -1,0 +1,9 @@
+services:
+  vue_api:
+    build: .
+    image: vue_api
+    container_name: pos_frontend
+    ports:
+      - '5050:80'
+    networks:
+      - my_net
