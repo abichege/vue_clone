@@ -220,6 +220,8 @@ a { color: var(--accent); }
                                         class="badge bg-danger">Failed</span>
                                     <span v-else-if="sale.payment && sale.payment.status === 'Pending'"
                                         class="badge bg-warning text-dark">Pending</span>
+                                    <span v-else-if="sale.payment && sale.payment.status === 'Unpaid'"
+                                        class="badge bg-danger">Unpaid</span>
                                     <span v-else class="badge bg-secondary">No Payment</span>
                                 </td>
                                 <td>{{ formatDate(sale.created_at) }}</td>
@@ -299,16 +301,27 @@ a { color: var(--accent); }
                         <div v-if="stkErrorMsg" class="alert alert-danger  py-2">{{ stkErrorMsg }}</div>
                         <div v-if="stkSuccessMsg" class="alert alert-success py-2">{{ stkSuccessMsg }}</div>
 
+                        <!-- Pending: show waiting indicator, form locked -->
+                        <div v-if="currentPaymentPending" class="alert alert-warning py-2 mb-3">
+                            ⏳ STK Push sent — waiting for customer to enter PIN…
+                            <div class="text-muted small mt-1">Will auto-unlock in {{ pendingCountdown }}s if no response.</div>
+                        </div>
+
+                        <!-- Unpaid: timed out or cancelled — re-enable form to retry -->
+                        <div v-if="currentPaymentUnpaid" class="alert alert-danger py-2 mb-3">
+                            ❌ Payment not completed. You can send a new STK Push below.
+                        </div>
+
                         <div v-if="!currentSalePaid" class="mb-4">
                             <h6 class="fw-semibold mb-3">Request M-Pesa Payment</h6>
                             <div class="mb-3">
                                 <label class="form-label">Phone Number</label>
                                 <input type="tel" class="form-control" v-model="phoneNumber" placeholder="254712345678"
-                                    :disabled="stkSubmitting" />
+                                    :disabled="stkSubmitting || currentPaymentPending" />
                                 <div class="form-text">Format: 254XXXXXXXXX</div>
                             </div>
                             <button class="btn btn-success w-100" @click="makePayment"
-                                :disabled="stkSubmitting || !phoneNumber">
+                                :disabled="stkSubmitting || !phoneNumber || currentPaymentPending">
                                 <span v-if="stkSubmitting">
                                     <span class="spinner-border spinner-border-sm me-1"></span>Sending…
                                 </span>
@@ -367,7 +380,8 @@ a { color: var(--accent); }
                 managerPassword: "", managerError: "", managerLoading: false, pendingAction: null,
                 deleteTarget: null, deleteLoading: false,
                 currentSaleId: null, currentSaleName: "", currentSaleAmount: 0,
-                currentSalePaid: false, currentPayment: null,
+                currentSalePaid: false, currentPaymentPending: false, currentPaymentUnpaid: false,
+                currentPayment: null, pendingCountdown: 20,
                 phoneNumber: "", stkSubmitting: false, stkErrorMsg: "", stkSuccessMsg: ""
             },
             mounted() {
@@ -464,8 +478,15 @@ a { color: var(--accent); }
                     this.currentSaleName = sale.product ? sale.product.name : "Unknown"
                     this.currentSaleAmount = sale.product ? sale.product.amount : 0
                     this.currentSalePaid = !!(sale.payment && sale.payment.status === "Paid")
+                    this.currentPaymentPending = !!(sale.payment && sale.payment.status === "Pending")
+                    this.currentPaymentUnpaid = !!(sale.payment && sale.payment.status === "Unpaid")
                     this.currentPayment = sale.payment || null
+                    this.pendingCountdown = 20
                     this.phoneNumber = ""; this.stkErrorMsg = ""; this.stkSuccessMsg = ""
+                    // If payment is already Pending when modal opens, resume polling
+                    if (this.currentPaymentPending) {
+                        this.pollPaymentStatus(sale.id)
+                    }
                 },
 
                 async makePayment() {
@@ -480,6 +501,9 @@ a { color: var(--accent); }
                             { headers: this.getHeaders() })
                         this.stkSuccessMsg = "STK Push sent! Ask customer to enter M-Pesa PIN."
                         this.phoneNumber = ""
+                        this.currentPaymentPending = true
+                        this.currentPaymentUnpaid = false
+                        this.pendingCountdown = 20
                         this.pollPaymentStatus(this.currentSaleId)
                     } catch (err) {
                         if (err.response?.status === 401) window.location.href = "login.html"
@@ -488,30 +512,52 @@ a { color: var(--accent); }
                 },
 
                 pollPaymentStatus(saleId) {
+                    // Poll every 2s for up to 10 attempts (20s total — matches server timeout)
                     let attempts = 0
+                    this.pendingCountdown = 20
+                    const countdownInterval = setInterval(() => {
+                        if (this.pendingCountdown > 0) this.pendingCountdown--
+                    }, 1000)
+
                     const interval = setInterval(async () => {
                         attempts++
                         try {
                             const res = await axios.get(`${BASE_URL}/sales`, { headers: this.getHeaders() })
                             const updated = res.data.data.find(s => s.id === saleId)
-                            if (updated?.payment?.trans_code) {
+
+                            if (updated?.payment?.status === "Paid" && updated.payment.trans_code) {
+                                // ✅ Confirmed
                                 clearInterval(interval)
+                                clearInterval(countdownInterval)
                                 this.currentPayment = updated.payment
                                 this.currentSalePaid = true
+                                this.currentPaymentPending = false
+                                this.currentPaymentUnpaid = false
                                 this.stkSuccessMsg = `✅ Payment confirmed! Code: ${updated.payment.trans_code}`
                                 this.sales = res.data.data
                                 this.$nextTick(() => this.initTable())
-                            } else if (attempts >= 20) {
+
+                            } else if (updated?.payment?.status === "Unpaid" || attempts >= 10) {
+                                // ❌ Timed out or server already flipped to Unpaid
                                 clearInterval(interval)
-                                this.stkErrorMsg = "Not confirmed yet. Refresh to check."
+                                clearInterval(countdownInterval)
+                                this.currentPaymentPending = false
+                                this.currentPaymentUnpaid = true
+                                this.currentPayment = updated?.payment || this.currentPayment
+                                this.stkSuccessMsg = ""
+                                this.stkErrorMsg = "Payment not completed. Enter a number and try again."
+                                this.sales = res.data.data
+                                this.$nextTick(() => this.initTable())
                             }
-                        } catch { clearInterval(interval) }
-                    }, 3000)
+                        } catch { clearInterval(interval); clearInterval(countdownInterval) }
+                    }, 2000)
                 },
 
                 resetModal() {
                     this.phoneNumber = ""; this.stkErrorMsg = ""
                     this.stkSuccessMsg = ""; this.stkSubmitting = false
+                    this.currentPaymentPending = false; this.currentPaymentUnpaid = false
+                    this.pendingCountdown = 20
                 },
 
                 initTable() {
