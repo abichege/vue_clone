@@ -381,7 +381,8 @@ a { color: var(--accent); }
                 deleteTarget: null, deleteLoading: false,
                 currentSaleId: null, currentSaleName: "", currentSaleAmount: 0,
                 currentSalePaid: false, currentPaymentPending: false, currentPaymentUnpaid: false,
-                currentPayment: null, pendingCountdown: 20,
+                currentPayment: null, pendingCountdown: 75,
+                pollIntervalId: null, countdownIntervalId: null,
                 phoneNumber: "", stkSubmitting: false, stkErrorMsg: "", stkSuccessMsg: ""
             },
             mounted() {
@@ -474,6 +475,8 @@ a { color: var(--accent); }
                 // Bootstrap opens paymentModal via data-bs-toggle on the button.
                 // openPaymentModal() only populates the Vue data.
                 openPaymentModal(sale) {
+                    // Always stop any poll left running from a previously-viewed sale first
+                    this.stopPolling()
                     this.currentSaleId = sale.id
                     this.currentSaleName = sale.product ? sale.product.name : "Unknown"
                     this.currentSaleAmount = sale.product ? sale.product.amount : 0
@@ -511,17 +514,36 @@ a { color: var(--accent); }
                     } finally { this.stkSubmitting = false }
                 },
 
+                // Stops any currently-running poll/countdown so a new attempt
+                // (or closing the modal) can never be overwritten by a stale
+                // loop from a previous STK push attempt.
+                stopPolling() {
+                    if (this.pollIntervalId) { clearInterval(this.pollIntervalId); this.pollIntervalId = null }
+                    if (this.countdownIntervalId) { clearInterval(this.countdownIntervalId); this.countdownIntervalId = null }
+                },
+
                 pollPaymentStatus(saleId) {
+                    // Always cancel any previous loop first — this is the fix for the
+                    // "correct PIN entered, SMS received, but UI still says failed" bug:
+                    // an earlier attempt's loop was still running and clobbered the
+                    // newer successful state when it finally timed out.
+                    this.stopPolling()
+
                     // Poll every 3s for up to 25 attempts (75s total).
                     // Safaricom callbacks typically arrive within 30-60s.
                     // Status only changes via the server callback — we just watch for it.
                     let attempts = 0
                     this.pendingCountdown = 75
-                    const countdownInterval = setInterval(() => {
+
+                    this.countdownIntervalId = setInterval(() => {
                         if (this.pendingCountdown > 0) this.pendingCountdown--
                     }, 1000)
 
-                    const interval = setInterval(async () => {
+                    this.pollIntervalId = setInterval(async () => {
+                        // If the modal has moved on to a different sale, or polling
+                        // was stopped elsewhere, this loop should no longer act.
+                        if (this.currentSaleId !== saleId) { this.stopPolling(); return }
+
                         attempts++
                         try {
                             const res = await axios.get(`${BASE_URL}/sales`, { headers: this.getHeaders() })
@@ -529,8 +551,7 @@ a { color: var(--accent); }
 
                             if (updated?.payment?.status === "Paid" && updated.payment.trans_code) {
                                 // ✅ Callback confirmed payment
-                                clearInterval(interval)
-                                clearInterval(countdownInterval)
+                                this.stopPolling()
                                 this.currentPayment = updated.payment
                                 this.currentSalePaid = true
                                 this.currentPaymentPending = false
@@ -541,8 +562,7 @@ a { color: var(--accent); }
 
                             } else if (updated?.payment?.status === "Unpaid") {
                                 // ❌ Callback reported failure/cancellation
-                                clearInterval(interval)
-                                clearInterval(countdownInterval)
+                                this.stopPolling()
                                 this.currentPaymentPending = false
                                 this.currentPaymentUnpaid = true
                                 this.currentPayment = updated.payment
@@ -553,18 +573,18 @@ a { color: var(--accent); }
 
                             } else if (attempts >= 25) {
                                 // No callback after 75s — unlock for retry but keep status as-is
-                                clearInterval(interval)
-                                clearInterval(countdownInterval)
+                                this.stopPolling()
                                 this.currentPaymentPending = false
                                 this.currentPaymentUnpaid = true
                                 this.stkSuccessMsg = ""
                                 this.stkErrorMsg = "No response from M-Pesa after 75s. You can retry below."
                             }
-                        } catch { clearInterval(interval); clearInterval(countdownInterval) }
+                        } catch { this.stopPolling() }
                     }, 3000)
                 },
 
                 resetModal() {
+                    this.stopPolling()
                     this.phoneNumber = ""; this.stkErrorMsg = ""
                     this.stkSuccessMsg = ""; this.stkSubmitting = false
                     this.currentPaymentPending = false; this.currentPaymentUnpaid = false
