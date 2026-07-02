@@ -304,7 +304,7 @@ a { color: var(--accent); }
                         <!-- Pending: show waiting indicator, form locked -->
                         <div v-if="currentPaymentPending" class="alert alert-warning py-2 mb-3">
                             ⏳ STK Push sent — waiting for customer to enter PIN…
-                            <div class="text-muted small mt-1">Will auto-unlock in {{ pendingCountdown }}s if no response.</div>
+                            <div class="text-muted small mt-1">Will auto-unlock in {{ pendingCountdown }}s if no response from M-Pesa.</div>
                         </div>
 
                         <!-- Unpaid: timed out or cancelled — re-enable form to retry -->
@@ -481,7 +481,7 @@ a { color: var(--accent); }
                     this.currentPaymentPending = !!(sale.payment && sale.payment.status === "Pending")
                     this.currentPaymentUnpaid = !!(sale.payment && sale.payment.status === "Unpaid")
                     this.currentPayment = sale.payment || null
-                    this.pendingCountdown = 20
+                    this.pendingCountdown = 75
                     this.phoneNumber = ""; this.stkErrorMsg = ""; this.stkSuccessMsg = ""
                     // If payment is already Pending when modal opens, resume polling
                     if (this.currentPaymentPending) {
@@ -512,9 +512,11 @@ a { color: var(--accent); }
                 },
 
                 pollPaymentStatus(saleId) {
-                    // Poll every 2s for up to 10 attempts (20s total — matches server timeout)
+                    // Poll every 3s for up to 25 attempts (75s total).
+                    // Safaricom callbacks typically arrive within 30-60s.
+                    // Status only changes via the server callback — we just watch for it.
                     let attempts = 0
-                    this.pendingCountdown = 20
+                    this.pendingCountdown = 75
                     const countdownInterval = setInterval(() => {
                         if (this.pendingCountdown > 0) this.pendingCountdown--
                     }, 1000)
@@ -526,7 +528,7 @@ a { color: var(--accent); }
                             const updated = res.data.data.find(s => s.id === saleId)
 
                             if (updated?.payment?.status === "Paid" && updated.payment.trans_code) {
-                                // ✅ Confirmed
+                                // ✅ Callback confirmed payment
                                 clearInterval(interval)
                                 clearInterval(countdownInterval)
                                 this.currentPayment = updated.payment
@@ -537,27 +539,36 @@ a { color: var(--accent); }
                                 this.sales = res.data.data
                                 this.$nextTick(() => this.initTable())
 
-                            } else if (updated?.payment?.status === "Unpaid" || attempts >= 10) {
-                                // ❌ Timed out or server already flipped to Unpaid
+                            } else if (updated?.payment?.status === "Unpaid") {
+                                // ❌ Callback reported failure/cancellation
                                 clearInterval(interval)
                                 clearInterval(countdownInterval)
                                 this.currentPaymentPending = false
                                 this.currentPaymentUnpaid = true
-                                this.currentPayment = updated?.payment || this.currentPayment
+                                this.currentPayment = updated.payment
                                 this.stkSuccessMsg = ""
-                                this.stkErrorMsg = "Payment not completed. Enter a number and try again."
+                                this.stkErrorMsg = "Payment cancelled or failed. Enter a number and try again."
                                 this.sales = res.data.data
                                 this.$nextTick(() => this.initTable())
+
+                            } else if (attempts >= 25) {
+                                // No callback after 75s — unlock for retry but keep status as-is
+                                clearInterval(interval)
+                                clearInterval(countdownInterval)
+                                this.currentPaymentPending = false
+                                this.currentPaymentUnpaid = true
+                                this.stkSuccessMsg = ""
+                                this.stkErrorMsg = "No response from M-Pesa after 75s. You can retry below."
                             }
                         } catch { clearInterval(interval); clearInterval(countdownInterval) }
-                    }, 2000)
+                    }, 3000)
                 },
 
                 resetModal() {
                     this.phoneNumber = ""; this.stkErrorMsg = ""
                     this.stkSuccessMsg = ""; this.stkSubmitting = false
                     this.currentPaymentPending = false; this.currentPaymentUnpaid = false
-                    this.pendingCountdown = 20
+                    this.pendingCountdown = 75
                 },
 
                 initTable() {
