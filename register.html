@@ -89,8 +89,9 @@ h1, h2, h3, h4, h5, h6, .navbar-brand, .modal-title {
 .btn-secondary { background: rgba(244,242,236,0.1) !important; border-color: var(--line) !important; color: var(--paper) !important; }
 .btn-secondary:hover { background: rgba(244,242,236,0.18) !important; }
 .btn-dark { background: #0c0c14 !important; border-color: var(--line) !important; }
-.btn-outline-light { border-color: rgba(244,242,236,0.35) !important; color: var(--paper) !important; }
-.btn-outline-light:hover { background: rgba(244,242,236,0.1) !important; color: var(--paper) !important; }
+/* Logout button uses the accent color instead of a generic light outline */
+.btn-outline-light { border-color: var(--accent) !important; color: var(--accent) !important; background: transparent !important; }
+.btn-outline-light:hover { background: var(--accent) !important; color: #fff !important; border-color: var(--accent) !important; }
 
 /* Alerts */
 .alert-danger { background: rgba(200,69,58,0.15) !important; color: #ff9a8d !important; border: 1px solid rgba(200,69,58,0.35) !important; }
@@ -148,6 +149,50 @@ h1, h2, h3, h4, h5, h6, .navbar-brand, .modal-title {
 
 a { color: var(--accent); }
 
+/* Action buttons (Sell/Edit/Delete etc.) — vertically centered as a group,
+   wrap onto a new line if space is tight, and stack full-width on very
+   small phones so they stay tappable. */
+.action-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem;
+}
+@media (max-width: 480px) {
+    .action-buttons { flex-direction: column; align-items: stretch; }
+    .action-buttons .btn { width: 100%; }
+}
+
+/* DataTables Responsive plugin — "+" expand control for small screens */
+table.dtr-inline.collapsed > tbody > tr > td.dtr-control,
+table.dtr-inline.collapsed > tbody > tr > th.dtr-control {
+    position: relative;
+    padding-left: 30px;
+}
+table.dtr-inline.collapsed > tbody > tr > td.dtr-control::before,
+table.dtr-inline.collapsed > tbody > tr > th.dtr-control::before {
+    background-color: var(--accent);
+    box-shadow: 0 0 0 1px var(--paper);
+}
+table.dtr-inline.collapsed > tbody > tr.parent > td.dtr-control::before,
+table.dtr-inline.collapsed > tbody > tr.parent > th.dtr-control::before {
+    background-color: #c8453a;
+}
+ul.dtr-details { list-style: none; padding: 0; margin: 0; }
+ul.dtr-details > li { border-bottom: 1px solid var(--line); padding: 0.4rem 0; }
+ul.dtr-details > li:last-child { border-bottom: none; }
+.dtr-title { font-weight: 600; color: var(--paper); margin-right: 0.4rem; }
+div.dtr-modal div.dtr-modal-display {
+    background: var(--ink-2) !important;
+    color: var(--paper) !important;
+    border: 1px solid var(--line) !important;
+}
+div.dtr-modal div.dtr-modal-close {
+    background: var(--accent) !important;
+    color: #fff !important;
+    border: none !important;
+}
+
 /* Register page: submit button uses the purple accent instead of green */
 .vh-100 .btn-success {
     background: var(--accent) !important;
@@ -173,9 +218,6 @@ a { color: var(--accent); }
                 </button>
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav">
-                        <li class="nav-item">
-                            <a class="nav-link " href="index.html">Home</a>
-                        </li>
                         <li class="nav-item">
                             <a class="nav-link active" aria-current="page" href="register.html">Register</a>
                         </li>
@@ -205,6 +247,10 @@ a { color: var(--accent); }
                 <div class="mb-3">
                     <label class="form-label">Password</label>
                     <input v-model="password" type="password" class="form-control" placeholder="••••••••" />
+                    <div v-if="password" class="small mt-1" :class="passwordStrength === 'strong' ? 'text-success' : 'text-danger'">
+                        <span v-if="passwordStrength === 'strong'">✅ Strong password</span>
+                        <span v-else>⚠️ Weak password — needs at least 8 characters, an uppercase letter, a number, and a special character</span>
+                    </div>
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Confirm Password</label>
@@ -241,6 +287,16 @@ a { color: var(--accent); }
                 successMsg: "",
                 loading: false
             },
+            computed: {
+                passwordStrength() {
+                    const pwd = this.password || ""
+                    const hasUpper = /[A-Z]/.test(pwd)
+                    const hasNumber = /\d/.test(pwd)
+                    const hasSpecial = /[!@#$%^&*(),.?":{}|<>_\-+=~`\[\]\\/;']/.test(pwd)
+                    const longEnough = pwd.length >= 8
+                    return (hasUpper && hasNumber && hasSpecial && longEnough) ? "strong" : "weak"
+                }
+            },
             methods: {
                 async register() {
                     this.errorMsg = ""
@@ -253,6 +309,11 @@ a { color: var(--accent); }
 
                     if (this.password !== this.confirmPassword) {
                         this.errorMsg = "Passwords do not match"
+                        return
+                    }
+
+                    if (this.passwordStrength === "weak") {
+                        this.errorMsg = "Password is too weak. Use at least 8 characters with an uppercase letter, a number, and a special character."
                         return
                     }
 

@@ -1,603 +1,422 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>POS – Dashboard</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap');
-
-        :root {
-            --ink: #14141f;
-            --ink-2: #1c1c2a;
-            --paper: #f4f2ec;
-            --till-green: #1f7a4d;
-            --line: rgba(244, 242, 236, 0.12);
-            --accent: #6b35c9;
-            --muted: rgba(244, 242, 236, 0.6);
-        }
-
-        body {
-            background: var(--ink) !important;
-            color: var(--paper);
-            font-family: 'Inter', sans-serif;
-        }
-
-        h1,
-        h2,
-        h3,
-        h4,
-        h5,
-        h6,
-        .navbar-brand,
-        .modal-title {
-            font-family: 'Space Grotesk', sans-serif !important;
-        }
-
-        .text-muted,
-        .form-text {
-            color: var(--muted) !important;
-        }
-
-        /* Navbar */
-        .navbar,
-        .navbar.bg-body-tertiary {
-            background: var(--ink-2) !important;
-            border-bottom: 1px solid var(--line);
-        }
-
-        .navbar-brand,
-        .nav-link,
-        .text-white,
-        .text-white-50 {
-            color: var(--paper) !important;
-        }
-
-        .navbar-brand span.accent {
-            color: var(--accent);
-        }
-
-        .nav-link.active {
-            color: var(--accent) !important;
-            font-weight: 600;
-        }
-
-        .nav-link:hover {
-            color: var(--accent) !important;
-        }
-
-        /* Cards */
-        .card {
-            background: rgba(244, 242, 236, 0.04) !important;
-            border: 1px solid var(--line) !important;
-            color: var(--paper);
-            border-radius: 10px;
-        }
-
-        .card-header {
-            background: rgba(244, 242, 236, 0.05) !important;
-            border-bottom: 1px solid var(--line) !important;
-            color: var(--paper);
-            font-family: 'Space Grotesk', sans-serif;
-        }
-
-        /* Forms */
-        .form-control,
-        .form-select {
-            background: rgba(244, 242, 236, 0.05) !important;
-            border: 1px solid var(--line) !important;
-            color: var(--paper) !important;
-        }
-
-        .form-control::placeholder {
-            color: rgba(244, 242, 236, 0.35);
-        }
-
-        .form-control:focus,
-        .form-select:focus {
-            background: rgba(244, 242, 236, 0.07) !important;
-            border-color: var(--accent) !important;
-            box-shadow: 0 0 0 0.2rem rgba(107, 53, 201, 0.30) !important;
-            color: var(--paper) !important;
-        }
-
-        .form-control:disabled {
-            opacity: 0.5;
-        }
-
-        .form-label {
-            color: var(--paper);
-            font-weight: 500;
-            font-size: 0.9rem;
-        }
-
-        .input-group-text {
-            background: rgba(244, 242, 236, 0.08) !important;
-            border: 1px solid var(--line) !important;
-            color: var(--paper) !important;
-        }
-
-        /* Buttons */
-        .btn {
-            border-radius: 7px;
-            font-weight: 500;
-        }
-
-        .btn-primary {
-            background: var(--accent) !important;
-            border-color: var(--accent) !important;
-            color: #fff !important;
-        }
-
-        .btn-primary:hover,
-        .btn-primary:focus {
-            background: #7e4ad6 !important;
-            border-color: #7e4ad6 !important;
-        }
-
-        .btn-success {
-            background: var(--till-green) !important;
-            border-color: var(--till-green) !important;
-        }
-
-        .btn-success:hover {
-            background: #25925d !important;
-            border-color: #25925d !important;
-        }
-
-        .btn-warning {
-            background: #d99a1c !important;
-            border-color: #d99a1c !important;
-            color: #14141f !important;
-        }
-
-        .btn-danger {
-            background: #c8453a !important;
-            border-color: #c8453a !important;
-        }
-
-        .btn-secondary {
-            background: rgba(244, 242, 236, 0.1) !important;
-            border-color: var(--line) !important;
-            color: var(--paper) !important;
-        }
-
-        .btn-secondary:hover {
-            background: rgba(244, 242, 236, 0.18) !important;
-        }
-
-        .btn-dark {
-            background: #0c0c14 !important;
-            border-color: var(--line) !important;
-        }
-
-        .btn-outline-light {
-            border-color: rgba(244, 242, 236, 0.35) !important;
-            color: var(--paper) !important;
-        }
-
-        .btn-outline-light:hover {
-            background: rgba(244, 242, 236, 0.1) !important;
-            color: var(--paper) !important;
-        }
-
-        /* Alerts */
-        .alert-danger {
-            background: rgba(200, 69, 58, 0.15) !important;
-            color: #ff9a8d !important;
-            border: 1px solid rgba(200, 69, 58, 0.35) !important;
-        }
-
-        .alert-success {
-            background: rgba(31, 122, 77, 0.15) !important;
-            color: #6fdba3 !important;
-            border: 1px solid rgba(31, 122, 77, 0.35) !important;
-        }
-
-        .alert-info {
-            background: rgba(13, 110, 253, 0.12) !important;
-            color: #8fc1ff !important;
-            border: 1px solid rgba(13, 110, 253, 0.3) !important;
-        }
-
-        /* Badges */
-        .badge.bg-success {
-            background: var(--till-green) !important;
-        }
-
-        .badge.bg-danger {
-            background: #c8453a !important;
-        }
-
-        .badge.bg-warning {
-            background: #d99a1c !important;
-        }
-
-        .badge.bg-secondary {
-            background: rgba(244, 242, 236, 0.15) !important;
-        }
-
-        .badge-stock-ok {
-            background: var(--till-green) !important;
-        }
-
-        .badge-stock-low {
-            background: #d99a1c !important;
-        }
-
-        .badge-stock-none {
-            background: #c8453a !important;
-        }
-
-        /* Tables */
-        .table {
-            color: var(--paper);
-            border-color: var(--line);
-        }
-
-        .table> :not(caption)>*>* {
-            background: transparent;
-            color: var(--paper);
-            border-color: var(--line);
-        }
-
-        .table-striped>tbody>tr:nth-of-type(odd)>* {
-            background: rgba(244, 242, 236, 0.03);
-            color: var(--paper);
-        }
-
-        .table-hover>tbody>tr:hover>* {
-            background: rgba(107, 53, 201, 0.10);
-            color: var(--paper);
-        }
-
-        .table thead {
-            border-bottom: 1px solid var(--line);
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 0.78rem;
-            letter-spacing: 0.04em;
-            text-transform: uppercase;
-            color: var(--muted);
-        }
-
-        .table-sm {
-            color: var(--paper);
-        }
-
-        /* DataTables controls */
-        .dataTables_wrapper {
-            color: var(--paper);
-        }
-
-        .dataTables_filter input,
-        .dataTables_length select {
-            background: rgba(244, 242, 236, 0.05);
-            border: 1px solid var(--line);
-            color: var(--paper);
-            border-radius: 6px;
-        }
-
-        .dataTables_info,
-        .dataTables_length label,
-        .dataTables_filter label {
-            color: var(--muted) !important;
-        }
-
-        .page-link {
-            background: transparent !important;
-            border-color: var(--line) !important;
-            color: var(--paper) !important;
-        }
-
-        .page-item.active .page-link {
-            background: var(--accent) !important;
-            border-color: var(--accent) !important;
-            color: #fff !important;
-        }
-
-        .page-item.disabled .page-link {
-            color: rgba(244, 242, 236, 0.3) !important;
-        }
-
-        /* Modals */
-        .modal-content {
-            background: var(--ink-2) !important;
-            color: var(--paper);
-            border: 1px solid var(--line) !important;
-            border-radius: 10px;
-        }
-
-        .modal-header,
-        .modal-footer {
-            border-color: var(--line) !important;
-        }
-
-        .btn-close {
-            filter: invert(1) grayscale(1) brightness(1.8);
-        }
-
-        /* Login/register centered card polish */
-        .vh-100.d-flex .card {
-            box-shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.6) !important;
-        }
-
-        /* Stat cards (dashboard) */
-        .stat-card {
-            background: rgba(244, 242, 236, 0.04) !important;
-        }
-
-        .stat-card.sales {
-            border-left-color: var(--accent) !important;
-        }
-
-        .stat-card.revenue {
-            border-left-color: var(--till-green) !important;
-        }
-
-        .stat-card.stock {
-            border-left-color: #d99a1c !important;
-        }
-
-        .stat-card.pending {
-            border-left-color: #d99a1c !important;
-        }
-
-        .stat-value {
-            font-family: 'Space Grotesk', sans-serif;
-        }
-
-        .text-primary {
-            color: var(--accent) !important;
-        }
-
-        .text-success {
-            color: #6fdba3 !important;
-        }
-
-        .text-warning {
-            color: #f0b94c !important;
-        }
-
-        .text-danger {
-            color: #ff9a8d !important;
-        }
-
-        .chart-card {
-            background: rgba(244, 242, 236, 0.04) !important;
-        }
-
-        a {
-            color: var(--accent);
-        }
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>POS – Dashboard</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"/>
+  <style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap');
+
+:root {
+    --ink: #14141f;
+    --ink-2: #1c1c2a;
+    --paper: #f4f2ec;
+    --till-green: #1f7a4d;
+    --line: rgba(244,242,236,0.12);
+    --accent: #6b35c9;
+    --muted: rgba(244,242,236,0.6);
+}
+
+body {
+    background: var(--ink) !important;
+    color: var(--paper);
+    font-family: 'Inter', sans-serif;
+}
+
+h1, h2, h3, h4, h5, h6, .navbar-brand, .modal-title {
+    font-family: 'Space Grotesk', sans-serif !important;
+}
+
+.text-muted, .form-text { color: var(--muted) !important; }
+
+/* Navbar */
+.navbar, .navbar.bg-body-tertiary {
+    background: var(--ink-2) !important;
+    border-bottom: 1px solid var(--line);
+}
+.navbar-brand, .nav-link, .text-white, .text-white-50 {
+    color: var(--paper) !important;
+}
+.navbar-brand span.accent { color: var(--accent); }
+.nav-link.active { color: var(--accent) !important; font-weight: 600; }
+.nav-link:hover { color: var(--accent) !important; }
+
+/* Cards */
+.card {
+    background: rgba(244,242,236,0.04) !important;
+    border: 1px solid var(--line) !important;
+    color: var(--paper);
+    border-radius: 10px;
+}
+.card-header {
+    background: rgba(244,242,236,0.05) !important;
+    border-bottom: 1px solid var(--line) !important;
+    color: var(--paper);
+    font-family: 'Space Grotesk', sans-serif;
+}
+
+/* Forms */
+.form-control, .form-select {
+    background: rgba(244,242,236,0.05) !important;
+    border: 1px solid var(--line) !important;
+    color: var(--paper) !important;
+}
+.form-control::placeholder { color: rgba(244,242,236,0.35); }
+.form-control:focus, .form-select:focus {
+    background: rgba(244,242,236,0.07) !important;
+    border-color: var(--accent) !important;
+    box-shadow: 0 0 0 0.2rem rgba(107,53,201,0.30) !important;
+    color: var(--paper) !important;
+}
+.form-control:disabled { opacity: 0.5; }
+.form-label { color: var(--paper); font-weight: 500; font-size: 0.9rem; }
+.input-group-text {
+    background: rgba(244,242,236,0.08) !important;
+    border: 1px solid var(--line) !important;
+    color: var(--paper) !important;
+}
+
+/* Buttons */
+.btn { border-radius: 7px; font-weight: 500; }
+.btn-primary { background: var(--accent) !important; border-color: var(--accent) !important; color: #fff !important; }
+.btn-primary:hover, .btn-primary:focus { background: #7e4ad6 !important; border-color: #7e4ad6 !important; }
+.btn-success { background: var(--till-green) !important; border-color: var(--till-green) !important; }
+.btn-success:hover { background: #25925d !important; border-color: #25925d !important; }
+.btn-warning { background: #d99a1c !important; border-color: #d99a1c !important; color: #14141f !important; }
+.btn-danger { background: #c8453a !important; border-color: #c8453a !important; }
+.btn-secondary { background: rgba(244,242,236,0.1) !important; border-color: var(--line) !important; color: var(--paper) !important; }
+.btn-secondary:hover { background: rgba(244,242,236,0.18) !important; }
+.btn-dark { background: #0c0c14 !important; border-color: var(--line) !important; }
+/* Logout button uses the accent color instead of a generic light outline */
+.btn-outline-light { border-color: var(--accent) !important; color: var(--accent) !important; background: transparent !important; }
+.btn-outline-light:hover { background: var(--accent) !important; color: #fff !important; border-color: var(--accent) !important; }
+
+/* Alerts */
+.alert-danger { background: rgba(200,69,58,0.15) !important; color: #ff9a8d !important; border: 1px solid rgba(200,69,58,0.35) !important; }
+.alert-success { background: rgba(31,122,77,0.15) !important; color: #6fdba3 !important; border: 1px solid rgba(31,122,77,0.35) !important; }
+.alert-info { background: rgba(13,110,253,0.12) !important; color: #8fc1ff !important; border: 1px solid rgba(13,110,253,0.3) !important; }
+
+/* Badges */
+.badge.bg-success { background: var(--till-green) !important; }
+.badge.bg-danger { background: #c8453a !important; }
+.badge.bg-warning { background: #d99a1c !important; }
+.badge.bg-secondary { background: rgba(244,242,236,0.15) !important; }
+.badge-stock-ok { background: var(--till-green) !important; }
+.badge-stock-low { background: #d99a1c !important; }
+.badge-stock-none { background: #c8453a !important; }
+
+/* Tables */
+.table { color: var(--paper); border-color: var(--line); }
+.table > :not(caption) > * > * { background: transparent; color: var(--paper); border-color: var(--line); }
+.table-striped > tbody > tr:nth-of-type(odd) > * { background: rgba(244,242,236,0.03); color: var(--paper); }
+.table-hover > tbody > tr:hover > * { background: rgba(107,53,201,0.10); color: var(--paper); }
+.table thead { border-bottom: 1px solid var(--line); font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); }
+.table-sm { color: var(--paper); }
+
+/* DataTables controls */
+.dataTables_wrapper { color: var(--paper); }
+.dataTables_filter input, .dataTables_length select {
+    background: rgba(244,242,236,0.05); border: 1px solid var(--line); color: var(--paper); border-radius: 6px;
+}
+.dataTables_info, .dataTables_length label, .dataTables_filter label { color: var(--muted) !important; }
+.page-link { background: transparent !important; border-color: var(--line) !important; color: var(--paper) !important; }
+.page-item.active .page-link { background: var(--accent) !important; border-color: var(--accent) !important; color: #fff !important; }
+.page-item.disabled .page-link { color: rgba(244,242,236,0.3) !important; }
+
+/* Modals */
+.modal-content { background: var(--ink-2) !important; color: var(--paper); border: 1px solid var(--line) !important; border-radius: 10px; }
+.modal-header, .modal-footer { border-color: var(--line) !important; }
+.btn-close { filter: invert(1) grayscale(1) brightness(1.8); }
+
+/* Login/register centered card polish */
+.vh-100.d-flex .card { box-shadow: 0 30px 60px -20px rgba(0,0,0,0.6) !important; }
+
+/* Stat cards (dashboard) */
+.stat-card { background: rgba(244,242,236,0.04) !important; }
+.stat-card.sales   { border-left-color: var(--accent) !important; }
+.stat-card.revenue { border-left-color: var(--till-green) !important; }
+.stat-card.stock   { border-left-color: #d99a1c !important; }
+.stat-card.pending { border-left-color: #d99a1c !important; }
+.stat-value { font-family: 'Space Grotesk', sans-serif; }
+.text-primary { color: var(--accent) !important; }
+.text-success { color: #6fdba3 !important; }
+.text-warning { color: #f0b94c !important; }
+.text-danger { color: #ff9a8d !important; }
+
+.chart-card { background: rgba(244,242,236,0.04) !important; }
+
+a { color: var(--accent); }
+
+/* Action buttons (Sell/Edit/Delete etc.) — vertically centered as a group,
+   wrap onto a new line if space is tight, and stack full-width on very
+   small phones so they stay tappable. */
+.action-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem;
+}
+@media (max-width: 480px) {
+    .action-buttons { flex-direction: column; align-items: stretch; }
+    .action-buttons .btn { width: 100%; }
+}
+
+/* DataTables Responsive plugin — "+" expand control for small screens */
+table.dtr-inline.collapsed > tbody > tr > td.dtr-control,
+table.dtr-inline.collapsed > tbody > tr > th.dtr-control {
+    position: relative;
+    padding-left: 30px;
+}
+table.dtr-inline.collapsed > tbody > tr > td.dtr-control::before,
+table.dtr-inline.collapsed > tbody > tr > th.dtr-control::before {
+    background-color: var(--accent);
+    box-shadow: 0 0 0 1px var(--paper);
+}
+table.dtr-inline.collapsed > tbody > tr.parent > td.dtr-control::before,
+table.dtr-inline.collapsed > tbody > tr.parent > th.dtr-control::before {
+    background-color: #c8453a;
+}
+ul.dtr-details { list-style: none; padding: 0; margin: 0; }
+ul.dtr-details > li { border-bottom: 1px solid var(--line); padding: 0.4rem 0; }
+ul.dtr-details > li:last-child { border-bottom: none; }
+.dtr-title { font-weight: 600; color: var(--paper); margin-right: 0.4rem; }
+div.dtr-modal div.dtr-modal-display {
+    background: var(--ink-2) !important;
+    color: var(--paper) !important;
+    border: 1px solid var(--line) !important;
+}
+div.dtr-modal div.dtr-modal-close {
+    background: var(--accent) !important;
+    color: #fff !important;
+    border: none !important;
+}
+
     </style>
 </head>
-
 <body>
-    <div id="app">
+<div id="app">
 
-        <!-- Navbar -->
-        <nav class="navbar navbar-dark px-4 py-2 mb-4">
-            <span class="navbar-brand fw-bold">🛒 POS System</span>
-            <div class="d-flex align-items-center gap-3">
-                <a href="dashboard.html" class="text-white text-decoration-none fw-semibold">Dashboard</a>
-                <a href="products.html" class="text-white text-decoration-none">Products</a>
-                <a href="stock.html" class="text-white text-decoration-none">Stock</a>
-                <a href="sales.html" class="text-white text-decoration-none">Sales</a>
-                <span class="text-white-50 small">{{ userName }}</span>
-                <button class="btn btn-sm btn-outline-light" @click="logout">Logout</button>
-            </div>
-        </nav>
+  <!-- Navbar -->
+  <nav class="navbar navbar-dark px-4 py-2 mb-4">
+    <span class="navbar-brand fw-bold">🛒 POS System</span>
+    <div class="d-flex align-items-center gap-3">
+      <a href="dashboard.html" class="text-white text-decoration-none fw-semibold">Dashboard</a>
+      <a href="products.html"  class="text-white text-decoration-none">Products</a>
+      <a href="stock.html"     class="text-white text-decoration-none">Stock</a>
+      <a href="sales.html"     class="text-white text-decoration-none">Sales</a>
+      <span class="text-white-50 small">{{ userName }}</span>
+      <button class="btn btn-sm btn-outline-light" @click="logout">Logout</button>
+    </div>
+  </nav>
 
-        <div class="container-fluid px-4">
+  <div class="container-fluid px-4">
 
-            <div v-if="errorMsg" class="alert alert-danger py-2">{{ errorMsg }}</div>
+    <div v-if="errorMsg" class="alert alert-danger py-2">{{ errorMsg }}</div>
 
-            <!-- Summary Cards -->
-            <div class="row g-3 mb-4" v-if="!loading">
-                <div class="col-sm-6 col-xl-3">
-                    <div class="card shadow-sm stat-card sales p-3">
-                        <div class="text-muted small mb-1">Total Sales</div>
-                        <div class="stat-value text-primary">{{ stats.total_sales }}</div>
-                        <div class="text-muted small">transactions</div>
-                    </div>
-                </div>
-                <div class="col-sm-6 col-xl-3">
-                    <div class="card shadow-sm stat-card revenue p-3">
-                        <div class="text-muted small mb-1">Total Revenue</div>
-                        <div class="stat-value text-success">KES {{ formatNumber(stats.total_revenue) }}</div>
-                        <div class="text-muted small">from paid sales</div>
-                    </div>
-                </div>
-                <div class="col-sm-6 col-xl-3">
-                    <div class="card shadow-sm stat-card stock p-3">
-                        <div class="text-muted small mb-1">Low / Out of Stock</div>
-                        <div class="stat-value text-warning">{{ stats.low_stock_count }}</div>
-                        <div class="text-muted small">products need restocking</div>
-                    </div>
-                </div>
-                <div class="col-sm-6 col-xl-3">
-                    <div class="card shadow-sm stat-card pending p-3">
-                        <div class="text-muted small mb-1">Pending Payments</div>
-                        <div class="stat-value text-warning">{{ stats.pending_count }}</div>
-                        <div class="text-muted small">awaiting confirmation</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Loading spinner -->
-            <div v-if="loading" class="text-center py-5">
-                <div class="spinner-border text-primary"></div>
-                <div class="mt-2 text-muted">Loading dashboard…</div>
-            </div>
-
-            <!-- Charts Row 1 -->
-            <div class="row g-3 mb-4" v-if="!loading">
-                <div class="col-lg-6">
-                    <div class="card shadow-sm chart-card p-3">
-                        <canvas id="salesByProductChart" height="260"></canvas>
-                    </div>
-                </div>
-                <div class="col-lg-6">
-                    <div class="card shadow-sm chart-card p-3">
-                        <canvas id="salesPerDayChart" height="260"></canvas>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Charts Row 2 -->
-            <div class="row g-3 mb-4" v-if="!loading">
-                <div class="col-lg-6">
-                    <div class="card shadow-sm chart-card p-3">
-                        <canvas id="revenueByProductChart" height="260"></canvas>
-                    </div>
-                </div>
-                <div class="col-lg-6">
-                    <div class="card shadow-sm chart-card p-3">
-                        <canvas id="stockLevelsChart" height="260"></canvas>
-                    </div>
-                </div>
-            </div>
-
+    <!-- Summary Cards -->
+    <div class="row g-3 mb-4" v-if="!loading">
+      <div class="col-sm-6 col-xl-3">
+        <div class="card shadow-sm stat-card sales p-3">
+          <div class="text-muted small mb-1">Total Sales</div>
+          <div class="stat-value text-primary">{{ stats.total_sales }}</div>
+          <div class="text-muted small">transactions</div>
         </div>
+      </div>
+      <div class="col-sm-6 col-xl-3">
+        <div class="card shadow-sm stat-card revenue p-3">
+          <div class="text-muted small mb-1">Total Revenue</div>
+          <div class="stat-value text-success">KES {{ formatNumber(stats.total_revenue) }}</div>
+          <div class="text-muted small">from paid sales</div>
+        </div>
+      </div>
+      <div class="col-sm-6 col-xl-3">
+        <div class="card shadow-sm stat-card stock p-3">
+          <div class="text-muted small mb-1">Low / Out of Stock</div>
+          <div class="stat-value text-warning">{{ stats.low_stock_count }}</div>
+          <div class="text-muted small">products need restocking</div>
+        </div>
+      </div>
+      <div class="col-sm-6 col-xl-3">
+        <div class="card shadow-sm stat-card pending p-3">
+          <div class="text-muted small mb-1">Pending Payments</div>
+          <div class="stat-value text-warning">{{ stats.pending_count }}</div>
+          <div class="text-muted small">awaiting confirmation</div>
+        </div>
+      </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/vue@2.7.14/dist/vue.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <script>
-        const BASE_URL = "http://174.138.45.153:7000"
+    <!-- Loading spinner -->
+    <div v-if="loading" class="text-center py-5">
+      <div class="spinner-border text-primary"></div>
+      <div class="mt-2 text-muted">Loading dashboard…</div>
+    </div>
 
-        const COLORS = [
-            "#0d6efd", "#198754", "#fd7e14", "#dc3545",
-            "#6f42c1", "#20c997", "#0dcaf0", "#ffc107"
-        ]
+    <!-- Charts Row 1 -->
+    <div class="row g-3 mb-4" v-if="!loading">
+      <div class="col-lg-6">
+        <div class="card shadow-sm chart-card p-3">
+          <canvas id="salesByProductChart" height="260"></canvas>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <div class="card shadow-sm chart-card p-3">
+          <canvas id="salesPerDayChart" height="260"></canvas>
+        </div>
+      </div>
+    </div>
 
-        new Vue({
-            el: "#app",
-            data: {
-                stats: {},
-                charts: {},
-                loading: true,
-                errorMsg: "",
-                userName: ""
-            },
-            mounted() {
-                if (!localStorage.getItem("token")) {
-                    window.location.href = "login.html"
-                    return
-                }
-                const user = JSON.parse(localStorage.getItem("user") || "{}")
-                this.userName = user.full_name || user.email || ""
-                this.loadDashboard()
-            },
-            methods: {
-                getHeaders() {
-                    const token = localStorage.getItem("token")
-                    return { Authorization: `Bearer ${token}` }
-                },
-                formatNumber(n) {
-                    return (n || 0).toLocaleString()
-                },
-                async loadDashboard() {
-                    try {
-                        const res = await axios.get(`${BASE_URL}/dashboard`, { headers: this.getHeaders() })
-                        this.stats = res.data.stats
-                        this.loading = false
-                        this.$nextTick(() => this.renderCharts(res.data.charts))
-                    } catch (err) {
-                        this.loading = false
-                        if (err.response?.status === 401) {
-                            window.location.href = "login.html"
-                        } else {
-                            this.errorMsg = err.response?.data?.error || "Failed to load dashboard"
-                        }
-                    }
-                },
-                renderCharts(data) {
-                    // Sales by product (bar)
-                    new Chart(document.getElementById("salesByProductChart"), {
-                        type: "bar",
-                        data: {
-                            labels: data.sales_by_product.labels,
-                            datasets: [{
-                                label: "Sales Count",
-                                data: data.sales_by_product.values,
-                                backgroundColor: COLORS
-                            }]
-                        },
-                        options: {
-                            plugins: { title: { display: true, text: "Sales Count by Product" } },
-                            scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
-                        }
-                    })
+    <!-- Charts Row 2 -->
+    <div class="row g-3 mb-4" v-if="!loading">
+      <div class="col-lg-6">
+        <div class="card shadow-sm chart-card p-3">
+          <canvas id="revenueByProductChart" height="260"></canvas>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <div class="card shadow-sm chart-card p-3">
+          <canvas id="stockLevelsChart" height="260"></canvas>
+        </div>
+      </div>
+    </div>
 
-                    // Sales per day (line)
-                    new Chart(document.getElementById("salesPerDayChart"), {
-                        type: "line",
-                        data: {
-                            labels: data.sales_per_day.labels,
-                            datasets: [{
-                                label: "Sales",
-                                data: data.sales_per_day.values,
-                                borderColor: "#0d6efd",
-                                backgroundColor: "rgba(13,110,253,0.1)",
-                                fill: true,
-                                tension: 0.4
-                            }]
-                        },
-                        options: {
-                            plugins: { title: { display: true, text: "Sales Per Day (Last 30 Days)" } },
-                            scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
-                        }
-                    })
+  </div>
+</div>
 
-                    // Revenue by product (bar)
-                    new Chart(document.getElementById("revenueByProductChart"), {
-                        type: "bar",
-                        data: {
-                            labels: data.revenue_by_product.labels,
-                            datasets: [{
-                                label: "Revenue (KES)",
-                                data: data.revenue_by_product.values,
-                                backgroundColor: COLORS
-                            }]
-                        },
-                        options: {
-                            plugins: { title: { display: true, text: "Revenue by Product (KES)" } },
-                            scales: { y: { beginAtZero: true } }
-                        }
-                    })
+<script src="https://cdn.jsdelivr.net/npm/vue@2.7.14/dist/vue.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+  const BASE_URL = "http://174.138.45.153:7000"
 
-                    // Stock levels (horizontal bar)
-                    new Chart(document.getElementById("stockLevelsChart"), {
-                        type: "bar",
-                        data: {
-                            labels: data.stock_levels.labels,
-                            datasets: [{
-                                label: "Quantity in Stock",
-                                data: data.stock_levels.values,
-                                backgroundColor: data.stock_levels.values.map(v =>
-                                    v === 0 ? "#dc3545" : v <= 5 ? "#fd7e14" : "#198754"
-                                )
-                            }]
-                        },
-                        options: {
-                            indexAxis: "y",
-                            plugins: { title: { display: true, text: "Current Stock Levels" } },
-                            scales: { x: { beginAtZero: true, ticks: { stepSize: 1 } } }
-                        }
-                    })
-                },
-                logout() {
-                    localStorage.removeItem("token")
-                    localStorage.removeItem("user")
-                    window.location.href = "login.html"
-                }
-            }
+  const COLORS = [
+    "#0d6efd","#198754","#fd7e14","#dc3545",
+    "#6f42c1","#20c997","#0dcaf0","#ffc107"
+  ]
+
+  new Vue({
+    el: "#app",
+    data: {
+      stats:    {},
+      charts:   {},
+      loading:  true,
+      errorMsg: "",
+      userName: ""
+    },
+    mounted() {
+      if (!localStorage.getItem("token")) {
+        window.location.href = "login.html"
+        return
+      }
+      const user = JSON.parse(localStorage.getItem("user") || "{}")
+      this.userName = user.full_name || user.email || ""
+      this.loadDashboard()
+    },
+    methods: {
+      getHeaders() {
+        const token = localStorage.getItem("token")
+        return { Authorization: `Bearer ${token}` }
+      },
+      formatNumber(n) {
+        return (n || 0).toLocaleString()
+      },
+      async loadDashboard() {
+        try {
+          const res = await axios.get(`${BASE_URL}/dashboard`, { headers: this.getHeaders() })
+          this.stats   = res.data.stats
+          this.loading = false
+          this.$nextTick(() => this.renderCharts(res.data.charts))
+        } catch (err) {
+          this.loading = false
+          if (err.response?.status === 401) {
+            window.location.href = "login.html"
+          } else {
+            this.errorMsg = err.response?.data?.error || "Failed to load dashboard"
+          }
+        }
+      },
+      renderCharts(data) {
+        // Sales by product (bar)
+        new Chart(document.getElementById("salesByProductChart"), {
+          type: "bar",
+          data: {
+            labels: data.sales_by_product.labels,
+            datasets: [{
+              label: "Sales Count",
+              data:  data.sales_by_product.values,
+              backgroundColor: COLORS
+            }]
+          },
+          options: {
+            plugins: { title: { display: true, text: "Sales Count by Product" } },
+            scales:  { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+          }
         })
-    </script>
-</body>
 
+        // Sales per day (line)
+        new Chart(document.getElementById("salesPerDayChart"), {
+          type: "line",
+          data: {
+            labels: data.sales_per_day.labels,
+            datasets: [{
+              label: "Sales",
+              data:  data.sales_per_day.values,
+              borderColor: "#0d6efd",
+              backgroundColor: "rgba(13,110,253,0.1)",
+              fill: true,
+              tension: 0.4
+            }]
+          },
+          options: {
+            plugins: { title: { display: true, text: "Sales Per Day (Last 30 Days)" } },
+            scales:  { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+          }
+        })
+
+        // Revenue by product (bar)
+        new Chart(document.getElementById("revenueByProductChart"), {
+          type: "bar",
+          data: {
+            labels: data.revenue_by_product.labels,
+            datasets: [{
+              label: "Revenue (KES)",
+              data:  data.revenue_by_product.values,
+              backgroundColor: COLORS
+            }]
+          },
+          options: {
+            plugins: { title: { display: true, text: "Revenue by Product (KES)" } },
+            scales:  { y: { beginAtZero: true } }
+          }
+        })
+
+        // Stock levels (horizontal bar)
+        new Chart(document.getElementById("stockLevelsChart"), {
+          type: "bar",
+          data: {
+            labels: data.stock_levels.labels,
+            datasets: [{
+              label: "Quantity in Stock",
+              data:  data.stock_levels.values,
+              backgroundColor: data.stock_levels.values.map(v =>
+                v === 0 ? "#dc3545" : v <= 5 ? "#fd7e14" : "#198754"
+              )
+            }]
+          },
+          options: {
+            indexAxis: "y",
+            plugins: { title: { display: true, text: "Current Stock Levels" } },
+            scales:  { x: { beginAtZero: true, ticks: { stepSize: 1 } } }
+          }
+        })
+      },
+      logout() {
+        localStorage.removeItem("token")
+        localStorage.removeItem("user")
+        window.location.href = "login.html"
+      }
+    }
+  })
+</script>
+</body>
 </html>
