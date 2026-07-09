@@ -248,8 +248,8 @@ div.dtr-modal div.dtr-modal-close {
                     <label class="form-label">Password</label>
                     <input v-model="password" type="password" class="form-control" placeholder="••••••••" />
                     <div v-if="password" class="small mt-1" :class="passwordStrength === 'strong' ? 'text-success' : 'text-danger'">
-                        <span v-if="passwordStrength === 'strong'">✅ Strong password</span>
-                        <span v-else>⚠️ Weak password — needs at least 8 characters, an uppercase letter, a number, and a special character</span>
+                        <span v-if="passwordStrength === 'strong'">Strong password</span>
+                        <span v-else> Weak password ;needs at least 8 characters, an uppercase letter, a number, and a special character</span>
                     </div>
                 </div>
                 <div class="mb-3">
@@ -274,7 +274,7 @@ div.dtr-modal div.dtr-modal-close {
     <script src="https://cdn.jsdelivr.net/npm/vue@2.7.14/dist/vue.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script>
-        const BASE_URL = "https://api.abipos.co.ke/"
+        const BASE_URL = "https://api.abipos.co.ke"
 
         new Vue({
             el: "#app",
